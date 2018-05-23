@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >  
+	
+	<mapper namespace="com.macaitech.beanpay.db.dao.NotifyDao">
+	
+	<sql id="notifyColumns">
+		n.id,
+		n.orderId,
+		n.notifyNum,
+		n.planNotifyTime, 
+		n.nextNotifyTime,
+		n.status,
+		n.createTime, 
+		n.updateTime,
+		n.notifyCode,
+		n.notifyMsg
+	</sql>
+	
+	<sql id="leftOrderColumns">
+		,o.orderNo as `order.orderNo`,o.merchantOrderNo as `order.merchantOrderNo`,o.merchantId as `order.merchantId`,o.appId as `order.appId`,
+			o.payChannel as `order.payChannel`,o.payMethod as `order.payMethod`,o.payWay as `order.payWay`,
+			o.orderName as `order.orderName`,o.orderMoney as `order.orderMoney`,o.payStatus as `order.payStatus`,
+			o.payMsg as `order.payMsg`,o.payTime as `order.payTime`,o.tradeNo as `order.tradeNo`,
+			o.tradeStatus as `order.tradeStatus`,o.tradeMsg as `order.tradeMsg`,o.notifyUrl as `order.notifyUrl`,o.refundStatus as `order.refundStatus`
+	</sql>
+	
+    <select id="getById" resultType="com.macaitech.beanpay.db.entity.Notify">
+		SELECT
+			<include refid="notifyColumns"/>
+		FROM mc_notify as n
+		WHERE id = #{id}
+    </select>
+    
+    <select id="findNeedNotifyList" resultType="com.macaitech.beanpay.db.entity.Notify">
+		SELECT
+			<include refid="notifyColumns"/>
+			<include refid="leftOrderColumns"/>
+			FROM mc_notify as n inner join mc_order as o on o.id = n.orderid
+		<where>
+			<if test="status != null and status != ''">
+				and n.status = #{status}
+			</if>
+			<if test="lePlanTime != null and lePlanTime != ''">
+				and n.planNotifyTime &lt;= #{lePlanTime}
+			</if>
+		</where>
+		<if test="limitSize != null and limitSize != ''">
+			limit #{limitSize}
+		</if>
+		
+    </select>
+    
+ 	<select id="getNeedNotify" resultType="com.macaitech.beanpay.db.entity.Notify">
+		SELECT
+			<include refid="notifyColumns"/>
+			<include refid="leftOrderColumns"/>
+			FROM mc_notify as n inner join mc_order as o on o.id = n.orderid
+		<where>
+			<if test="merchantOrderNo != null and merchantOrderNo != ''">
+				and o.merchantOrderNo = #{merchantOrderNo}
+			</if>
+			<if test="merchantId != null and merchantId != ''">
+				and o.merchantId = #{merchantId}
+			</if>
+			<if test="appId != null and appId != ''">
+				and o.appId = #{appId}
+			</if>
+			<if test="status != null and status != ''">
+				and n.status = #{status}
+			</if>
+		</where>
+			limit 1
+    </select>
+    
+	<insert id="insert" keyProperty="id" useGeneratedKeys="true" >
+		INSERT INTO mc_notify(
+			orderId,
+			notifyNum,
+			status,
+			planNotifyTime,
+			nextNotifyTime,
+			createTime, 
+			updateTime 
+		) VALUES (
+			#{orderId},
+			#{notifyNum},
+			#{status},
+			#{planNotifyTime},
+			#{nextNotifyTime},
+			now(), 
+			now() 
+		)
+	</insert>
+	
+	<update id="update">
+		update mc_notify
+		set 
+			orderId= #{orderId},
+			notifyNum = notifyNum+1,
+			status = #{status},
+			planNotifyTime = #{planNotifyTime},
+			nextNotifyTime = #{nextNotifyTime},
+			notifyCode = #{notifyCode},
+			notifyMsg = #{notifyMsg},
+			UpdateTime=now() 
+			where id = #{id}
+	</update>
+	
+	
+	<update id="updateSuccess">
+		update mc_notify
+		set 
+			notifyNum = notifyNum+1,
+			status = 2,
+			nextNotifyTime = null,
+			UpdateTime=now() 
+			where id = #{id}
+	</update>
+	
+</mapper>

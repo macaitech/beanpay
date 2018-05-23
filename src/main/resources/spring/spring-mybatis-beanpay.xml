@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:tx="http://www.springframework.org/schema/tx" xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+		http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop.xsd">
+    <description>Sql Mapping配置</description>
+    <bean id="sessionFactoryBeanPay" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSourceProxyBeanPay"/>
+        <property name="configLocation" value="classpath:mybatis/mybatis-config.xml"/>
+        <property name="mapperLocations">
+            <list>
+                <value>classpath*:mybatis/beanpay/**/*.xml</value>
+            </list>
+        </property>
+    </bean>
+    <!-- JDBC template -->
+    <bean id="jdbcTemplateBeanPay" class="org.mybatis.spring.SqlSessionTemplate">
+        <constructor-arg>
+            <ref bean="sessionFactoryBeanPay"></ref>
+        </constructor-arg>
+    </bean>
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.macaitech.beanpay.db.dao"/>
+        <property name="sqlSessionTemplateBeanName" value="jdbcTemplateBeanPay"></property>
+    </bean>
+    <bean id="transactionManagerBeanPay" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSourceProxyBeanPay"></property>
+    </bean>
+    <!-- 配置事务的传播特性 -->
+    <tx:advice id="txAdviceBeanPay" transaction-manager="transactionManagerBeanPay">
+        <tx:attributes>
+            <tx:method name="add*" propagation="REQUIRED"/>
+            <tx:method name="update*" propagation="REQUIRED"/>
+            <tx:method name="delete*" propagation="REQUIRED"/>
+            <tx:method name="insert*" propagation="REQUIRED"/>
+        </tx:attributes>
+    </tx:advice>
+    <aop:config>
+        <aop:pointcut id="allServiceMethodBeanPay" expression="execution(* com.macaitech.beanpay.db.service.*.*(..))"/>
+        <aop:advisor pointcut-ref="allServiceMethodBeanPay" advice-ref="txAdviceBeanPay"/>
+    </aop:config>
+</beans>

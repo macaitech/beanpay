@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >  
+	
+	<mapper namespace="com.macaitech.beanpay.db.dao.OrderDao">
+	
+	<sql id="orderColumns">
+		id,
+		merchantOrderNo,
+		orderNo,
+		merchantId,
+		appId, 
+		payChannel,
+		payMethod,
+		payWay,
+		orderName,
+		orderMoney,
+		clientIp,
+		expireSecond,
+		payStatus, 
+		payMsg, 
+		tradeNo, 
+		tradeStatus, 
+		tradeMsg, 
+		orderDesc, 
+		notifyUrl, 
+		returnUrl, 
+		requestTime, 
+		createTime, 
+		updateTime,
+		tradeOrderUrl,
+		tradePrepay
+	</sql>
+	
+    <select id="getById" resultType="com.macaitech.beanpay.db.entity.Order">
+		SELECT
+			<include refid="orderColumns"/>
+		FROM mc_order
+		WHERE id = #{id}
+    </select>
+    
+    <select id="getByMerchantOrderNo" resultType="com.macaitech.beanpay.db.entity.Order">
+		SELECT
+			<include refid="orderColumns"/>
+		FROM mc_order
+		WHERE appId = #{appId} and merchantOrderNo = #{merchantOrderNo}
+    </select>
+    
+    <select id="getByOrderNo" resultType="com.macaitech.beanpay.db.entity.Order">
+		SELECT
+			<include refid="orderColumns"/>
+		FROM mc_order
+		WHERE orderNo = #{orderNo}
+    </select>
+    
+    <select id="getByTradeNo" resultType="com.macaitech.beanpay.db.entity.Order">
+		SELECT
+			<include refid="orderColumns"/>
+		FROM mc_order
+		WHERE appId = #{appId} and tradeNo = #{tradeNo}
+    </select>
+    
+	<insert id="insert" keyProperty="id" useGeneratedKeys="true" >
+		INSERT INTO mc_order(
+			merchantOrderNo,
+			orderNo,
+			merchantId,
+			appId, 
+			payChannel,
+			payMethod,
+			payWay,
+			orderName,
+			orderMoney,
+			clientIp,
+			expireSecond,
+			orderDesc, 
+			notifyUrl, 
+			returnUrl, 
+			requestTime, 
+			createTime, 
+			updateTime 
+		) VALUES (
+			#{merchantOrderNo},
+			#{orderNo},
+			#{merchantId},
+			#{appId}, 
+			#{payChannel},
+			#{payMethod},
+			#{payWay},
+			#{orderName},
+			#{orderMoney},
+			#{clientIp},
+			#{expireSecond},
+			#{orderDesc}, 
+			#{notifyUrl}, 
+			#{returnUrl}, 
+			#{requestTime}, 
+			now(), 
+			now() 
+		)
+	</insert>
+	<!-- 订单重新向支付渠道发起支付前更新，只有未支付或支付中的可以更新 -->
+	<insert id="updateTryAgain" >
+		update mc_order set 
+			merchantOrderNo=#{merchantOrderNo},
+			orderNo=#{orderNo},
+			merchantId=#{merchantId},
+			appId=#{appId}, 
+			payChannel=#{payChannel},
+			payMethod=#{payMethod},
+			payWay=#{payWay},
+			orderName=#{orderName},
+			orderMoney=#{orderMoney},
+			clientIp=#{clientIp},
+			expireSecond=#{expireSecond},
+			orderDesc=#{orderDesc}, 
+			notifyUrl=#{notifyUrl}, 
+			returnUrl=#{returnUrl}, 
+			requestTime=#{requestTime}, 
+			tradeOrderUrl= '',
+			tradePrepay = '',
+			PayStatus=#{payStatus},
+  			PayMsg='',
+  			PayTime=null,
+  			TradeNo='',
+  			TradeStatus='',
+  			TradeMsg = '',
+			updateTime=now() 
+			where id = #{id} and appId=#{appId} and merchantId = #{merchantId}
+			and payStatus in(300,800)
+	</insert>
+	
+	<update id="updatePayResult">
+		update mc_order 
+		set 
+			orderNo= #{orderNo},
+			merchantId = #{merchantId},
+			payStatus = #{payStatus}, 
+			payMsg = #{payMsg}, 
+			tradeNo = #{tradeNo}, 
+			tradeStatus = #{tradeStatus}, 
+			tradeMsg = #{tradeMsg}, 
+			payTime = #{payTime},
+			UpdateTime=now() 
+			where id = #{id}
+	</update>
+	
+	<update id="updateOrderResponse">
+		update mc_order 
+		set 
+			tradeOrderUrl= #{tradeOrderUrl},
+			tradePrepay = #{tradePrepay},
+			UpdateTime=now() 
+			where id = #{id}
+	</update>
+    
+</mapper>

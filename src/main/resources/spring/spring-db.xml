@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans.xsd 
+	http://www.springframework.org/schema/tx 
+	http://www.springframework.org/schema/tx/spring-tx.xsd
+	http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context.xsd
+	http://www.springframework.org/schema/mvc
+	http://www.springframework.org/schema/mvc/spring-mvc.xsd
+	http://www.springframework.org/schema/aop
+	http://www.springframework.org/schema/aop/spring-aop.xsd"
+    default-autowire="byName">
+	
+	<bean id="dataSourceBeanPay" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close"> 
+	    <property name="driverClassName" value="${jdbc.driver}" />
+		<property name="url" value="${jdbc.url.beanpay}" />
+		<property name="username" value="${jdbc.username.beanpay}" />
+		<property name="password" value="${jdbc.password.beanpay}" />
+		<property name="initialSize" value="${jdbc.pool.init}" />
+		<property name="minIdle" value="${jdbc.pool.minIdle}" /> 
+		<property name="maxActive" value="${jdbc.pool.maxActive}" />
+		<property name="maxWait" value="60000" />
+		<property name="timeBetweenEvictionRunsMillis" value="60000" />
+		<property name="minEvictableIdleTimeMillis" value="300000" />
+		<property name="validationQuery" value="${jdbc.testSql}" />
+		<property name="testWhileIdle" value="true" />
+		<property name="testOnBorrow" value="false" />
+		<property name="testOnReturn" value="false" />
+	    <property name="filters" value="beanpay" /> 
+	</bean>
+	
+    <bean id="dataSourceProxyBeanPay" class="org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy">
+        <property name="targetDataSource" ref="dataSourceBeanPay"/>
+    </bean>
+	
+	
+</beans>

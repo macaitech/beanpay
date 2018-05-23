@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:context="http://www.springframework.org/schema/context" xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+    http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd
+    http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+    http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.0.xsd">
+
+	 <bean id="jobFactory" class="com.macaitech.beanpay.job.JobFactory"></bean> 
+
+    <bean id="scheduler" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+    	    <property name="jobFactory" ref="jobFactory"></property>
+        <property name="triggers">
+            <list>
+                <ref bean="notifyMerchantJobTrigger"/>
+            </list>
+        </property>
+        <property name="autoStartup" value="true" /> 
+    </bean>
+ 
+    <bean name="notifyMerchantJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+        <property name="group" value="notifyGroup"/>
+        <property name="jobClass" value="com.macaitech.beanpay.job.NotifyMerchantJob"/>
+        <property name="durability" value="true"/>
+        <property name="applicationContextJobDataKey" value="applicationContext"/>
+    </bean>
+    
+    <bean id="notifyMerchantJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="group" value="notifyTriggerGroup"/>
+        <property name="jobDetail" ref="notifyMerchantJob"/>
+        <property name="cronExpression" value="0/10 * * * * ?" />
+    </bean>
+
+
+</beans>
